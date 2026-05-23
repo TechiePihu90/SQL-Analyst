@@ -1,7 +1,5 @@
 # DataLens 
 
-Ever stared at a CSV file and thought — "I just want to ask this data a question"? That's exactly why I built this.
-
 SQL Analyst Bot lets you upload any dataset and talk to it in plain English. No SQL knowledge needed. Ask "which city had the most sales last quarter?" and it just... answers. With the actual SQL query shown right below so you know it's not making things up.
 
 ---
@@ -10,7 +8,7 @@ SQL Analyst Bot lets you upload any dataset and talk to it in plain English. No 
 
 You upload a file — CSV, Excel, JSON, whatever. The bot reads it, figures out the columns, and then you can start asking questions like you're talking to a data analyst.
 
-Under the hood it's using Groq's LLaMA model to turn your question into a SQL query, running that query against your data with DuckDB, and showing you both the result and the query. The "show the query" part was important to me — I didn't want it to feel like a black box.
+ It's using Groq's LLaMA model to turn your question into a SQL query, running that query against your data with DuckDB, and showing you both the result and the query. 
 
 There's also an Insights tab. Click it and it auto-generates 3 charts from your data with a one-line business insight for each. It uses Groq to decide which charts make sense for your data, then renders them with matplotlib on the backend. No generic pie charts — it actually looks at your columns and picks something useful.
 
@@ -70,15 +68,14 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` and you're good to go.
+Open `http://localhost:5173`
 
 ---
 
-## How it works (the interesting part)
+## How it works 
 
 When you upload a file, the backend reads it with pandas and extracts a schema — column names, data types, and a few sample values from each column. This schema gets injected into the LLM's system prompt every time you ask a question.
 
-So instead of just asking "what are the top 5 products?", the LLM is actually seeing something like:
 
 ```
 Table: sales_data (4820 rows)
@@ -92,29 +89,8 @@ That context is why it generates accurate column names instead of hallucinating.
 
 For the Insights tab — Groq first decides what 3 charts would be most informative (bar? histogram? line over time?), then the backend renders them with matplotlib and sends back base64-encoded PNGs. The chart planning step is the clever part — it's not just defaulting to the same charts every time, it's actually reasoning about your data.
 
----
 
-## Project structure
 
-```
-Data-Analyst-Bot/
-├── backend/
-│   ├── main.py          # FastAPI routes, session management, SQL execution
-│   ├── insights.py      # Chart planning (Groq) + rendering (matplotlib)
-│   ├── requirements.txt
-│   └── .env
-└── frontend/
-    └── src/
-        ├── App.jsx
-        └── components/
-            ├── ChatBox.jsx       # Conversation UI + SQL display
-            ├── FileUpload.jsx    # Drag and drop upload
-            ├── InsightsPanel.jsx # Insights tab with chart display
-            ├── ResultTable.jsx   # Data results table
-            └── ResultChart.jsx   # Inline bar charts (chat view)
-```
-
----
 
 ## API endpoints
 
@@ -128,4 +104,8 @@ GET  /health              Health check
 ```
 
 
+## Things i'd add more 
+The session data lives in memory right now — if the server restarts, sessions are gone. For a production version I'd persist sessions to Redis or a database.
+I'd also add the ability to join multiple tables. Upload two CSVs and ask questions that span both — "show me customers who bought product X" kind of queries.
+And proper authentication that's missing right now.
 
